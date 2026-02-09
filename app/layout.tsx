@@ -23,6 +23,7 @@ export default function RootLayout({
     <html lang="sr">
       <head>
         <link rel="preload" href="/images/hero-bg.png" as="image" />
+        <link rel="preload" href="/images/herovideo.webm" as="video" type="video/webm" />
       </head>
       <body>{children}</body>
     </html>

@@ -1,17 +1,32 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ChevronDown, Factory, Star, Handshake } from 'lucide-react';
 import Image from 'next/image';
 
-// LCP: statična slika (brza), zatim video za animaciju (WebM – manji od GIF-a)
+// LCP: statična slika (brza), zatim video. MP4 za Safari/iOS, WebM za Chrome/Firefox.
 const heroStaticSrc = '/images/hero-bg.png';
-const heroVideoSrc = '/images/herovideo.webm';
+const heroVideoMp4 = '/images/hero.mp4';
+const heroVideoWebm = '/images/herovideo.webm';
 
 export function Hero() {
   const [videoReady, setVideoReady] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Na mobilnim pregledačima autoplay često zahteva eksplicitni .play()
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || videoError) return;
+    const play = () => {
+      video.play().catch(() => setVideoError(true));
+    };
+    if (video.readyState >= 2) play();
+    else video.addEventListener('loadeddata', play, { once: true });
+    return () => video.removeEventListener('loadeddata', play);
+  }, [videoError]);
+
   const scrollToNext = () => {
     document.getElementById('zasto-mi')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -47,17 +62,24 @@ export function Hero() {
           fetchPriority="high"
           sizes="100vw"
         />
-        <video
-          ref={videoRef}
-          src={heroVideoSrc}
-          poster={heroStaticSrc}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
-          onCanPlay={() => setVideoReady(true)}
-        />
+        {!videoError && (
+          <video
+            ref={videoRef}
+            poster={heroStaticSrc}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+            onCanPlay={() => setVideoReady(true)}
+            onLoadedData={() => setVideoReady(true)}
+            onError={() => setVideoError(true)}
+          >
+            <source src={heroVideoWebm} type="video/webm" />
+            <source src={heroVideoMp4} type="video/mp4" />
+          </video>
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/80 via-[#0a1628]/60 to-[#0a1628]/95" />
       </div>
 
