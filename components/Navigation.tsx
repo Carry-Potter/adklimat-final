@@ -33,7 +33,11 @@ export function Navigation() {
     }
   };
 
-  const navItems = [
+  type NavItem =
+    | { label: string; id: string }
+    | { label: string; href: string };
+
+  const navItems: NavItem[] = [
     { label: 'Pocetna', id: 'pocetna' },
     { label: 'Projekti', id: 'projekti' },
     { label: 'Kontakt', id: 'kontakt' },
